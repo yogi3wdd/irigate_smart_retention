@@ -3,11 +3,35 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:flutter/gestures.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../widget/circle.dart';
 import '../constants/color.dart';
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
   const Login({super.key});
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+
+  Future<void> login() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailCtrl.text.trim(),
+        password: passCtrl.text.trim(),
+      );
+
+      Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Login gagal: $e")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +79,7 @@ class Login extends StatelessWidget {
                           const SizedBox(height: 30),
                           //EMAIL FIELD
                           TextField(
+                            controller: emailCtrl,
                             style: GoogleFonts.ruda(color: AppColors.text),
                             decoration: InputDecoration(
                               hintText: "Masukkan alamat email yang terdaftar",
@@ -77,6 +102,7 @@ class Login extends StatelessWidget {
                           const SizedBox(height: 10),
                           //PASSWORD FIELD
                           TextField(
+                            controller: passCtrl,
                             obscureText: true,
                             style: GoogleFonts.ruda(color: AppColors.text),
                             decoration: InputDecoration(
@@ -148,9 +174,7 @@ class Login extends StatelessWidget {
                     child:
                         //LOGIN BUTTON
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, '/home');
-                          },
+                          onPressed: login,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 130,

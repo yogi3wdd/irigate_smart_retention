@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "643520788594",
+    "project_id": "irigate-smart-retention",
+    "storage_bucket": "irigate-smart-retention.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643520788594:android:1ba418a60fdfb36b88eaeb",
+        "android_client_info": {
+          "package_name": "com.example.irigate_smart_retention"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_gCBHjB0nOZI_BIcei16mFwgqLzaOdjA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

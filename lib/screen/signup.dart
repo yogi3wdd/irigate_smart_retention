@@ -2,11 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../widget/circle.dart';
 import '../constants/color.dart';
 
-class Signup extends StatelessWidget {
+class Signup extends StatefulWidget {
   const Signup({super.key});
+
+  @override
+  State<Signup> createState() => _SignupState();
+}
+
+class _SignupState extends State<Signup> {
+  final nameCtrl = TextEditingController();
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+
+  Future<void> signup() async {
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailCtrl.text.trim(),
+        password: passCtrl.text.trim(),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Akun berhasil dibuat! Silakan login.")),
+      );
+
+      Navigator.pushReplacementNamed(context, '/login');
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal mendaftar: $e")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +83,7 @@ class Signup extends StatelessWidget {
                           const SizedBox(height: 30),
                           //NAME FIELD
                           TextField(
+                            controller: nameCtrl,
                             style: GoogleFonts.ruda(color: AppColors.text),
                             decoration: InputDecoration(
                               hintText: "Masukkan nama anda",
@@ -76,6 +106,7 @@ class Signup extends StatelessWidget {
                           const SizedBox(height: 10),
                           //EMAIL FIELD
                           TextField(
+                            controller: emailCtrl,
                             style: GoogleFonts.ruda(color: AppColors.text),
                             decoration: InputDecoration(
                               hintText: "Masukkan alamat email anda",
@@ -98,6 +129,7 @@ class Signup extends StatelessWidget {
                           const SizedBox(height: 10),
                           //PASSWORD FIELD
                           TextField(
+                            controller: passCtrl,
                             obscureText: true,
                             style: GoogleFonts.ruda(color: AppColors.text),
                             decoration: InputDecoration(
@@ -149,9 +181,7 @@ class Signup extends StatelessWidget {
                     child:
                         //LOGIN BUTTON
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, '/login');
-                          },
+                          onPressed: signup,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 130,
