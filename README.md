@@ -1,6 +1,43 @@
 # IriGate Smart Retention
 
-Project untuk monitoring kolam retensi dan mengontrol gate pada kolam retensi sebagai irigasi. Menggunakan liquid glass effect. Platform yang didukung adalah Android dan iOS. Aplikasi bisa di download pada kolom release.
+Aplikasi ini digunakan untuk **monitoring kolam retensi** dan **mengontrol gate (pintu air)** yang berfungsi sebagai sistem irigasi.  
+Tujuan utama aplikasi ini adalah membantu pengelolaan air secara lebih efisien melalui pemantauan kondisi kolam secara real-time dan pengoperasian gate secara manual maupun otomatis.
+
+Aplikasi dibangun dengan Flutter dan menggunakan **Liquid Glass UI Effect** untuk tampilan yang modern, interaktif, dan elegan.
+
+Aplikasi mendukung platform:
+
+- **Android**
+- **iOS**
+
+File instalasi aplikasi tersedia pada halaman **Release** repository ini.
+
+---
+
+## 🔧 Fitur-Fitur Aplikasi
+
+- **📊 Monitoring Water Level**  
+  Menampilkan ketinggian air kolam retensi secara real-time dari sensor IoT.
+
+- **🚪 Kontrol Gate (Pintu Air)**  
+  Mengontrol buka/tutup gate secara langsung melalui aplikasi.
+
+- **🔔 Notifikasi (Alert System)**  
+  Mendapatkan pemberitahuan ketika:
+  - Air mencapai batas atau kondisi tertentu  
+  - Gate terbuka/tertutup  
+  - Overflow / kondisi darurat    
+
+- **📈 Riwayat Data (Log History)**  
+  Menyimpan riwayat status level air kolam retensi dan sungai dalam bentuk bar chart.
+
+- **🎨 Liquid Glass UI Effect**  
+  Antarmuka menggunakan efek Liquid Glass yang memberikan visual lembut, modern, dan interaktif.
+
+- **📱 Cross-Platform Support**  
+  Aplikasi dapat berjalan pada Android dan iOS.
+
+---
 
 ## 📦 APK Release Files
 
