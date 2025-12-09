@@ -12,7 +12,14 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-  bool animationTextDone = false;
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.pushReplacementNamed(context, '/login');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,38 +38,22 @@ class _SplashState extends State<Splash> {
             child: Circle(size: 400, color: AppColors.primary),
           ),
           Center(
-            child: animationTextDone
-                ? Text(
-                    "IriGate\nSmart\nRetention",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.ruda(
-                      fontSize: 40,
-                      height: 1.15,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.text,
-                    ),
-                  )
-                : AnimatedTextKit(
-                    isRepeatingAnimation: false,
-                    totalRepeatCount: 1,
-                    animatedTexts: [
-                      ColorizeAnimatedText(
-                        "IriGate\nSmart\nResistance",
-                        textStyle: GoogleFonts.ruda(
-                          fontSize: 40,
-                          height: 1.15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        colors: [AppColors.primary, AppColors.secondary],
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                    onFinished: () {
-                      setState(() {
-                        animationTextDone = true;
-                      });
-                    },
+            child: AnimatedTextKit(
+              isRepeatingAnimation: false,
+              totalRepeatCount: 1,
+              animatedTexts: [
+                ColorizeAnimatedText(
+                  "IriGate\nSmart\nResistance",
+                  textStyle: GoogleFonts.ruda(
+                    fontSize: 40,
+                    height: 1.15,
+                    fontWeight: FontWeight.bold,
                   ),
+                  colors: [AppColors.primary, AppColors.secondary],
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ],
       ),

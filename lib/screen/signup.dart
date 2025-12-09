@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import '../widget/circle.dart';
 import '../constants/color.dart';
-import '../screen/login.dart';
 
 class Signup extends StatelessWidget {
   const Signup({super.key});
@@ -151,12 +150,7 @@ class Signup extends StatelessWidget {
                         //LOGIN BUTTON
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const Login(),
-                              ),
-                            );
+                            Navigator.pushReplacementNamed(context, '/login');
                           },
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(

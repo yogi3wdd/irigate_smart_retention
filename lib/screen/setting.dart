@@ -26,7 +26,7 @@ class Setting extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsetsGeometry.all(26),
+          padding: EdgeInsets.all(26),
           child: SingleChildScrollView(
             child: Column(
               children: [

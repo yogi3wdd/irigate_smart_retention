@@ -5,8 +5,6 @@ import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:flutter/gestures.dart';
 import '../widget/circle.dart';
 import '../constants/color.dart';
-import '../screen/signup.dart';
-import '../screen/home.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -123,12 +121,9 @@ class Login extends StatelessWidget {
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        Navigator.push(
+                                        Navigator.pushReplacementNamed(
                                           context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const Signup(),
-                                          ),
+                                          '/signup',
                                         );
                                       },
                                   ),
@@ -154,12 +149,7 @@ class Login extends StatelessWidget {
                         //LOGIN BUTTON
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const Home(),
-                              ),
-                            );
+                            Navigator.pushReplacementNamed(context, '/home');
                           },
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
