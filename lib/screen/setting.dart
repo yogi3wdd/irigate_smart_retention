@@ -376,6 +376,11 @@ class _SettingState extends State<Setting> {
   Widget _loadingLocationTile() {
     return ListTile(
       contentPadding: EdgeInsets.all(16),
+      leading: HugeIcon(
+        icon: HugeIcons.strokeRoundedLocation03,
+        color: AppColors.text,
+        size: 36,
+      ),
       title: Text(
         "Lokasi",
         style: GoogleFonts.ruda(
