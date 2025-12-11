@@ -251,7 +251,7 @@ class _HomeState extends State<Home> {
                   elevation: 0,
                   child: Container(
                     width: double.infinity,
-                    height: 400,
+                    height: 376,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       gradient: LinearGradient(
@@ -291,7 +291,7 @@ class _HomeState extends State<Home> {
                             kategoriMessage(),
                             textAlign: TextAlign.center,
                             style: GoogleFonts.ruda(
-                              fontSize: 20,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: AppColors.text,
                             ),
@@ -418,7 +418,7 @@ class _HomeState extends State<Home> {
           ),
           elevation: 0,
           child: Container(
-            height: 100,
+            height: 86,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: cardColor,
@@ -468,7 +468,7 @@ class _HomeState extends State<Home> {
               color: color,
             ),
             child: Padding(
-              padding: EdgeInsets.only(top: 25, left: 12, right: 12),
+              padding: EdgeInsets.only(top: 16, left: 12, right: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,7 +508,7 @@ class _HomeState extends State<Home> {
                       TextSpan(
                         text: value.toStringAsFixed(1),
                         style: GoogleFonts.ruda(
-                          fontSize: 40,
+                          fontSize: 36,
                           color: AppColors.text,
                           fontWeight: FontWeight.bold,
                         ),
