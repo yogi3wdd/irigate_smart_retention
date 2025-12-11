@@ -6,6 +6,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../constants/color.dart';
 import '../widget/navbar.dart';
 import '../widget/switch.dart';
@@ -18,7 +19,11 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final db = FirebaseDatabase.instance.ref();
+  final db = FirebaseDatabase.instanceFor(
+    app: Firebase.app(),
+    databaseURL:
+        "https://irigate-smart-retention-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  ).ref('IriGateSystem');
 
   List<StreamSubscription> listeners = [];
 
