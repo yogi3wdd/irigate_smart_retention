@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../widget/circle.dart';
 import '../constants/color.dart';
 
@@ -17,7 +18,15 @@ class _SplashState extends State<Splash> {
     super.initState();
 
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/login');
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // USER SUDAH LOGIN
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        // USER BELUM LOGIN
+        Navigator.pushReplacementNamed(context, '/login');
+      }
     });
   }
 

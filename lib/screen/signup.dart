@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widget/circle.dart';
 import '../constants/color.dart';
 
@@ -15,26 +16,38 @@ class Signup extends StatefulWidget {
 
 class _SignupState extends State<Signup> {
   final nameCtrl = TextEditingController();
+  final jobCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
 
   Future<void> signup() async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailCtrl.text.trim(),
-        password: passCtrl.text.trim(),
-      );
+    //Create akun Firebase Auth
+    UserCredential userCredential =
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: emailCtrl.text.trim(),
+      password: passCtrl.text.trim(),
+    );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Akun berhasil dibuat! Silakan login.")),
-      );
+    String uid = userCredential.user!.uid;
 
-      Navigator.pushReplacementNamed(context, '/login');
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal mendaftar: $e")));
-    }
+    //Data tambahan ke Firestore
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'nama': nameCtrl.text.trim(),
+      'jabatan': jobCtrl.text.trim(),
+      'email': emailCtrl.text.trim(),
+      'createdAt': Timestamp.now(),
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Akun berhasil dibuat! Silakan login.")),
+    );
+
+    Navigator.pushReplacementNamed(context, '/login');
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Gagal mendaftar: $e")));
+  }
   }
 
   @override
@@ -88,6 +101,29 @@ class _SignupState extends State<Signup> {
                             decoration: InputDecoration(
                               hintText: "Masukkan nama anda",
                               labelText: "Nama",
+                              hintStyle: GoogleFonts.ruda(
+                                color: AppColors.textOpacity,
+                                fontSize: 12,
+                              ),
+                              labelStyle: GoogleFonts.ruda(
+                                color: AppColors.text,
+                              ),
+                              enabledBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(color: AppColors.text),
+                              ),
+                              focusedBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          //JOB FIELD
+                          TextField(
+                            controller: jobCtrl,
+                            style: GoogleFonts.ruda(color: AppColors.text),
+                            decoration: InputDecoration(
+                              hintText: "Masukkan posisi jabatan anda",
+                              labelText: "Jabatan",
                               hintStyle: GoogleFonts.ruda(
                                 color: AppColors.textOpacity,
                                 fontSize: 12,

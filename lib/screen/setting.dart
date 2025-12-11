@@ -2,11 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/color.dart';
 import '../widget/navbar.dart';
 
-class Setting extends StatelessWidget {
+class Setting extends StatefulWidget {
   const Setting({super.key});
+
+  @override
+  State<Setting> createState() => _SettingState();
+}
+
+class _SettingState extends State<Setting> {
+  Future<Map<String, dynamic>?> getUserData() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    return doc.data();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,46 +85,63 @@ class Setting extends StatelessWidget {
                                 left: 16,
                                 right: 16,
                               ),
-                              child: Column(
-                                children: [
-                                  HugeIcon(
-                                    icon: HugeIcons.strokeRoundedUserCircle,
-                                    size: 65,
-                                    color: AppColors.text,
-                                    strokeWidth: 1.5,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    "Yogi Tri Widodo",
-                                    style: GoogleFonts.ruda(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.text,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    "Operator Monitoring",
-                                    style: GoogleFonts.ruda(
-                                      fontSize: 12,
-                                      color: AppColors.text,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    "email anda",
-                                    style: GoogleFonts.ruda(
-                                      fontSize: 12,
-                                      color: AppColors.text,
-                                    ),
-                                  ),
-                                ],
+                              child: FutureBuilder<Map<String, dynamic>?>(
+                                future: getUserData(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+
+                                  final user =
+                                      FirebaseAuth.instance.currentUser!;
+                                  final data = snapshot.data!;
+
+                                  return Column(
+                                    children: [
+                                      HugeIcon(
+                                        icon: HugeIcons.strokeRoundedUserCircle,
+                                        size: 65,
+                                        color: AppColors.text,
+                                        strokeWidth: 1.5,
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Text(
+                                        data["nama"] ?? "Nama tidak tersedia",
+                                        style: GoogleFonts.ruda(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.text,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        data["jabatan"] ??
+                                            "Jobdesk tidak tersedia",
+                                        style: GoogleFonts.ruda(
+                                          fontSize: 12,
+                                          color: AppColors.text,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        user.email ?? "Email tidak tersedia",
+                                        style: GoogleFonts.ruda(
+                                          fontSize: 12,
+                                          color: AppColors.text,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
+
                     Positioned(
                       right: 16,
                       bottom: 16,
@@ -125,12 +160,17 @@ class Setting extends StatelessWidget {
                               borderRadius: BorderRadius.circular(50),
                               color: Colors.transparent,
                             ),
-                            child: Center(
-                              child: HugeIcon(
-                                icon: HugeIcons.strokeRoundedPencilEdit02,
-                                color: AppColors.text,
-                                size: 18,
-                                strokeWidth: 1.5,
+                            child: GestureDetector(
+                              onTap: () async {
+                                Navigator.pushNamed(context, '/edit-profile');
+                              },
+                              child: Center(
+                                child: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedPencilEdit02,
+                                  color: AppColors.text,
+                                  size: 18,
+                                  strokeWidth: 1.5,
+                                ),
                               ),
                             ),
                           ),
@@ -225,7 +265,8 @@ class Setting extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 GestureDetector(
-                  onTap: () {
+                  onTap: () async {
+                    await FirebaseAuth.instance.signOut();
                     Navigator.pushReplacementNamed(context, '/login');
                   },
                   child: LiquidGlassLayer(

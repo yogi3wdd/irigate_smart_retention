@@ -7,6 +7,7 @@ import '../screen/statistik.dart';
 import '../screen/setting.dart';
 import '../screen/splash.dart';
 import '../screen/signup.dart';
+import '../screen/fitur/edit_profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ class MainApp extends StatelessWidget {
         '/statistik': (context) => const Statistik(),
         '/setting': (context) => const Setting(),
         '/signup': (context) => const Signup(),
+        '/edit-profile': (context) => EditProfile(),
       },
 
       initialRoute: '/splash',
