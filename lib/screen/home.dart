@@ -165,6 +165,20 @@ class _HomeState extends State<Home> {
     }
   }
 
+  // Icon kategori
+  IconData kategoriIcon() {
+    switch (kategori.toLowerCase()) {
+      case "bahaya":
+        return Icons.warning_amber_rounded;
+      case "siaga":
+        return Icons.error_outline_rounded;
+      case "aman":
+        return Icons.shield_rounded;
+      default:
+        return Icons.help_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Hitung persen kapasitas
@@ -273,8 +287,8 @@ class _HomeState extends State<Home> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          HugeIcon(
-                            icon: HugeIcons.strokeRoundedAlertDiamond,
+                          Icon(
+                            kategoriIcon(),
                             color: kategoriColor(),
                             size: 80,
                           ),
