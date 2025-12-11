@@ -4,6 +4,8 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../constants/color.dart';
 import '../widget/navbar.dart';
 
@@ -24,6 +26,54 @@ class _SettingState extends State<Setting> {
         .get();
 
     return doc.data();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _handlePermission();
+  }
+
+  Future<void> _handlePermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      print("Izin lokasi ditolak permanen");
+    }
+  }
+
+  Stream<Position> getPositionStream() {
+    const LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 10,
+    );
+
+    return Geolocator.getPositionStream(locationSettings: locationSettings);
+  }
+
+  Future<String> getAddressFromPosition(Position position) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      Placemark place = placemarks.first;
+
+      String desa = place.subLocality ?? "";
+      String kecamatan = place.locality ?? "";
+      String kabupaten = place.subAdministrativeArea ?? "";
+      String provinsi = place.administrativeArea ?? "";
+
+      return "$desa, Kec. $kecamatan, Kab. $kabupaten, $provinsi";
+    } catch (e) {
+      print("Error geocoding: $e");
+      return "Tidak dapat memproses alamat";
+    }
   }
 
   @override
@@ -141,7 +191,6 @@ class _SettingState extends State<Setting> {
                         ),
                       ),
                     ),
-
                     Positioned(
                       right: 16,
                       bottom: 16,
@@ -185,31 +234,28 @@ class _SettingState extends State<Setting> {
                     borderRadius: BorderRadius.circular(20),
                     color: AppColors.secondaryOpacity,
                   ),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(16),
-                    leading: HugeIcon(
-                      icon: HugeIcons.strokeRoundedLocation03,
-                      color: AppColors.text,
-                      size: 36,
-                      strokeWidth: 1.5,
-                    ),
-                    title: Text(
-                      "Lokasi",
-                      style: GoogleFonts.ruda(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.text,
-                      ),
-                    ),
-                    subtitle: Text(
-                      "Desa Sukamaju, Kec. Sukamakmur, Kab. Sukabumi",
-                      style: GoogleFonts.ruda(
-                        fontSize: 16,
-                        color: AppColors.text,
-                      ),
-                    ),
+                  child: StreamBuilder<Position>(
+                    stream: getPositionStream(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return _loadingLocationTile();
+                      }
+
+                      final pos = snapshot.data!;
+
+                      return FutureBuilder<String>(
+                        future: getAddressFromPosition(pos),
+                        builder: (context, addressSnapshot) {
+                          final alamat =
+                              addressSnapshot.data ?? "Memproses alamat...";
+
+                          return _locationTile(alamat);
+                        },
+                      );
+                    },
                   ),
                 ),
+
                 const SizedBox(height: 20),
                 GridView.builder(
                   shrinkWrap: true,
@@ -323,6 +369,47 @@ class _SettingState extends State<Setting> {
             Navigator.pushReplacementNamed(context, '/setting');
           }
         },
+      ),
+    );
+  }
+
+  Widget _loadingLocationTile() {
+    return ListTile(
+      contentPadding: EdgeInsets.all(16),
+      title: Text(
+        "Lokasi",
+        style: GoogleFonts.ruda(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: AppColors.text,
+        ),
+      ),
+      subtitle: Text(
+        "Mengambil lokasi...",
+        style: GoogleFonts.ruda(fontSize: 16, color: AppColors.text),
+      ),
+    );
+  }
+
+  Widget _locationTile(String alamat) {
+    return ListTile(
+      contentPadding: EdgeInsets.all(16),
+      leading: HugeIcon(
+        icon: HugeIcons.strokeRoundedLocation03,
+        color: AppColors.text,
+        size: 36,
+      ),
+      title: Text(
+        "Lokasi Sekarang",
+        style: GoogleFonts.ruda(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: AppColors.text,
+        ),
+      ),
+      subtitle: Text(
+        alamat,
+        style: GoogleFonts.ruda(fontSize: 16, color: AppColors.text),
       ),
     );
   }
