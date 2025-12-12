@@ -1,13 +1,166 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../constants/color.dart';
 import '../widget/navbar.dart';
 import '../widget/circle.dart';
 
-class Statistik extends StatelessWidget {
+class Statistik extends StatefulWidget {
   const Statistik({super.key});
+
+  @override
+  State<Statistik> createState() => _StatistikState();
+}
+
+class _StatistikState extends State<Statistik> {
+  final _statistik = FirebaseDatabase.instance.ref("IriGateSystem");
+
+  List<LineChartBarData> _chartKolam = [];
+  List<LineChartBarData> _chartSungai = [];
+
+  List<String> _labelJamKolam = [];
+  List<String> _labelJamSungai = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDataKolam();
+    _loadDataSungai();
+  }
+
+  Map<String, dynamic> _convertSnapshot(dynamic raw) {
+    if (raw == null) return {};
+
+    if (raw is Map) {
+      return Map<String, dynamic>.from(raw);
+    }
+
+    if (raw is List) {
+      Map<String, dynamic> result = {};
+      for (int i = 0; i < raw.length; i++) {
+        if (raw[i] != null) {
+          result[i.toString()] = raw[i];
+        }
+      }
+      return result;
+    }
+
+    return {};
+  }
+
+  void _loadDataGeneric(
+    String path,
+    Function(List<FlSpot>, List<String>) setter,
+  ) {
+    _statistik.child(path).onValue.listen((event) {
+      final dataRaw = event.snapshot.value;
+
+      // Convert aman: Map OR List
+      Map<String, dynamic> mapData = _convertSnapshot(dataRaw);
+      if (mapData.isEmpty) return;
+
+      List<Map<String, dynamic>> allData = [];
+
+      mapData.forEach((key, value) {
+        if (value is Map) {
+          final timeMs =
+              int.tryParse(value["unixtimeStamp"]?.toString() ?? "0") ?? 0;
+          final height =
+              double.tryParse(value["height"]?.toString() ?? "0") ?? 0;
+
+          allData.add({
+            "height": height,
+            "time": DateTime.fromMillisecondsSinceEpoch(timeMs),
+          });
+        }
+      });
+
+      if (allData.isEmpty) return;
+
+      // Urutkan berdasarkan waktu
+      allData.sort((a, b) => a["time"].compareTo(b["time"]));
+
+      DateTime now = DateTime.now();
+      DateTime limit = now.subtract(const Duration(hours: 7));
+
+      // Filter hanya 7 jam terakhir
+      List<Map<String, dynamic>> filtered = allData
+          .where((d) => d["time"].isAfter(limit))
+          .toList();
+
+      if (filtered.isEmpty) return;
+
+      // Group per jam (ambil 1 data terakhir per jam)
+      Map<String, Map<String, dynamic>> perJam = {};
+      for (var d in filtered) {
+        final t = d["time"];
+        String key = "${t.year}-${t.month}-${t.day}-${t.hour}";
+        perJam[key] = d;
+      }
+
+      List<Map<String, dynamic>> finalData = perJam.values.toList()
+        ..sort((a, b) => a["time"].compareTo(b["time"]));
+
+      List<FlSpot> spots = [];
+      List<String> labels = [];
+
+      for (int i = 0; i < finalData.length; i++) {
+        spots.add(FlSpot(i.toDouble(), finalData[i]["height"]));
+
+        final time = finalData[i]["time"];
+        labels.add("${time.hour.toString().padLeft(2, '0')}:00");
+      }
+
+      setter(spots, labels);
+    });
+  }
+
+  void _loadDataSungai() {
+    _loadDataGeneric("monitoring/statistik/sungai", (spots, labels) {
+      setState(() {
+        _labelJamSungai = labels;
+        _chartSungai = [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            barWidth: 3,
+            dotData: FlDotData(show: true),
+            color: AppColors.primary,
+          ),
+        ];
+      });
+    });
+  }
+
+  void _loadDataKolam() {
+    _loadDataGeneric("monitoring/statistik/kolam", (spots, labels) {
+      setState(() {
+        _labelJamKolam = labels;
+        _chartKolam = [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            barWidth: 3,
+            dotData: FlDotData(show: true),
+            color: AppColors.primary,
+          ),
+        ];
+      });
+    });
+  }
+
+  Widget _bottomTitle(double value, TitleMeta meta, List<String> labels) {
+    int index = value.toInt();
+    if (index < 0 || index >= labels.length) {
+      return const SizedBox.shrink();
+    }
+    return Text(
+      labels[index],
+      style: const TextStyle(fontSize: 10, color: Colors.white),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,61 +178,56 @@ class Statistik extends StatelessWidget {
             left: -44,
             child: Circle(size: 500, color: AppColors.primaryOpacity),
           ),
+
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.all(26),
+              padding: const EdgeInsets.all(26),
               child: SingleChildScrollView(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Data Statistik Mingguan',
+                      "Data Statistik Per Jam",
                       style: GoogleFonts.ruda(
                         color: AppColors.text,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                     const SizedBox(height: 14),
                     Text(
-                      "Ketinggian Sungai",
-                      style: GoogleFonts.ruda(
-                        color: AppColors.text,
-                        fontSize: 14,
-                      ),
+                      "Kedalaman Sungai",
+                      style: GoogleFonts.ruda(color: AppColors.text),
                     ),
                     const SizedBox(height: 12),
+
                     LiquidGlassLayer(
                       settings: LiquidGlassSettings(
-                        blur: 48,
-                        thickness: 84,
+                        blur: 34,
+                        thickness: 68,
                         glassColor: Colors.transparent,
                       ),
                       child: LiquidGlass(
                         shape: LiquidRoundedRectangle(borderRadius: 20),
                         child: Container(
-                          width: double.infinity,
                           height: 280,
-                          padding: EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.transparent,
-                          ),
+                          padding: const EdgeInsets.all(24),
                           child: LineChart(
                             LineChartData(
-                              backgroundColor: Colors.transparent,
+                              maxY: 60,
+                              minY: 0,
+                              lineBarsData: _chartSungai,
                               titlesData: FlTitlesData(
                                 leftTitles: AxisTitles(
                                   sideTitles: SideTitles(
                                     showTitles: true,
-                                    interval: 1,
                                     getTitlesWidget: (value, meta) {
                                       return Text(
                                         value.toInt().toString(),
                                         style: GoogleFonts.ruda(
+                                          fontSize: 10,
                                           color: AppColors.text,
-                                          fontSize: 12,
                                         ),
                                       );
                                     },
@@ -88,88 +236,56 @@ class Statistik extends StatelessWidget {
                                 bottomTitles: AxisTitles(
                                   sideTitles: SideTitles(
                                     showTitles: true,
-                                    interval: 1,
-                                    getTitlesWidget: (value, meta) {
-                                      return Text(
-                                        value.toInt().toString(),
-                                        style: GoogleFonts.ruda(
-                                          color: AppColors.text,
-                                          fontSize: 12,
-                                        ),
-                                      );
-                                    },
+                                    getTitlesWidget: (v, meta) =>
+                                        _bottomTitle(v, meta, _labelJamSungai),
                                   ),
-                                ),
-                                rightTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
                                 ),
                                 topTitles: AxisTitles(
                                   sideTitles: SideTitles(showTitles: false),
                                 ),
-                              ),
-                              lineBarsData: [
-                                LineChartBarData(
-                                  isCurved: true,
-                                  barWidth: 2,
-                                  color: AppColors.primary,
-                                  belowBarData: BarAreaData(show: false),
-                                  dotData: FlDotData(show: true),
-                                  spots: const [
-                                    FlSpot(0, 2),
-                                    FlSpot(1, 3),
-                                    FlSpot(2, 1.2),
-                                    FlSpot(3, 4),
-                                    FlSpot(4, 3.3),
-                                    FlSpot(5, 5),
-                                  ],
+                                rightTitles: AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
                                 ),
-                              ],
-                              gridData: FlGridData(show: true),
-                              borderData: FlBorderData(show: false),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 14),
                     Text(
-                      "Ketinggian Kolam Retensi",
-                      style: GoogleFonts.ruda(
-                        color: AppColors.text,
-                        fontSize: 14,
-                      ),
+                      "Kedalaman Kolam Retensi",
+                      style: GoogleFonts.ruda(color: AppColors.text),
                     ),
                     const SizedBox(height: 12),
+
                     LiquidGlassLayer(
                       settings: LiquidGlassSettings(
-                        blur: 48,
-                        thickness: 84,
+                        blur: 34,
+                        thickness: 68,
                         glassColor: Colors.transparent,
                       ),
                       child: LiquidGlass(
                         shape: LiquidRoundedRectangle(borderRadius: 20),
                         child: Container(
-                          width: double.infinity,
                           height: 280,
-                          padding: EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.transparent,
-                          ),
+                          padding: const EdgeInsets.all(24),
                           child: LineChart(
                             LineChartData(
-                              backgroundColor: Colors.transparent,
+                              maxY: 40,
+                              minY: 0,
+                              lineBarsData: _chartKolam,
                               titlesData: FlTitlesData(
                                 leftTitles: AxisTitles(
                                   sideTitles: SideTitles(
                                     showTitles: true,
-                                    interval: 1,
                                     getTitlesWidget: (value, meta) {
                                       return Text(
                                         value.toInt().toString(),
                                         style: GoogleFonts.ruda(
+                                          fontSize: 10,
                                           color: AppColors.text,
-                                          fontSize: 12,
                                         ),
                                       );
                                     },
@@ -178,44 +294,17 @@ class Statistik extends StatelessWidget {
                                 bottomTitles: AxisTitles(
                                   sideTitles: SideTitles(
                                     showTitles: true,
-                                    interval: 1,
-                                    getTitlesWidget: (value, meta) {
-                                      return Text(
-                                        value.toInt().toString(),
-                                        style: GoogleFonts.ruda(
-                                          color: AppColors.text,
-                                          fontSize: 12,
-                                        ),
-                                      );
-                                    },
+                                    getTitlesWidget: (v, meta) =>
+                                        _bottomTitle(v, meta, _labelJamKolam),
                                   ),
-                                ),
-                                rightTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
                                 ),
                                 topTitles: AxisTitles(
                                   sideTitles: SideTitles(showTitles: false),
                                 ),
-                              ),
-                              lineBarsData: [
-                                LineChartBarData(
-                                  isCurved: true,
-                                  barWidth: 2,
-                                  color: AppColors.primary,
-                                  belowBarData: BarAreaData(show: false),
-                                  dotData: FlDotData(show: true),
-                                  spots: const [
-                                    FlSpot(0, 2),
-                                    FlSpot(1, 3),
-                                    FlSpot(2, 1.2),
-                                    FlSpot(3, 4),
-                                    FlSpot(4, 3.3),
-                                    FlSpot(5, 5),
-                                  ],
+                                rightTitles: AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
                                 ),
-                              ],
-                              gridData: FlGridData(show: true),
-                              borderData: FlBorderData(show: false),
+                              ),
                             ),
                           ),
                         ),
@@ -228,16 +317,13 @@ class Statistik extends StatelessWidget {
           ),
         ],
       ),
+
       bottomNavigationBar: Navbar(
         currentIndex: 1,
         onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/home');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/statistik');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/setting');
-          }
+          if (index == 0) Navigator.pushReplacementNamed(context, "/home");
+          if (index == 1) Navigator.pushReplacementNamed(context, "/statistik");
+          if (index == 2) Navigator.pushReplacementNamed(context, "/setting");
         },
       ),
     );
