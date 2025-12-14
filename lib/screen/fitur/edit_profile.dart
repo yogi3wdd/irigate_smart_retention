@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import '../../widget/circle.dart';
 import '../../constants/color.dart';
 
 class EditProfile extends StatefulWidget {
@@ -55,72 +57,138 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           "Edit Profil",
-          style: GoogleFonts.ruda(color: AppColors.text, fontWeight: FontWeight.bold),
+          style: GoogleFonts.ruda(
+            color: AppColors.text,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         iconTheme: IconThemeData(color: AppColors.text),
       ),
       body: loading
           ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: nameController,
-                    style: TextStyle(color: AppColors.text),
-                    decoration: InputDecoration(
-                      labelText: "Nama",
-                      labelStyle: TextStyle(color: AppColors.text),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.text),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.primary),
-                      ),
+          : Stack(
+              children: [
+                Positioned(
+                  top: -78,
+                  left: -114,
+                  child: Circle(size: 400, color: AppColors.secondary),
+                ),
+                Positioned(
+                  top: 620,
+                  left: 108,
+                  child: Circle(size: 400, color: AppColors.primary),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        LiquidGlassLayer(
+                          settings: LiquidGlassSettings(
+                            thickness: 54,
+                            blur: 28,
+                            glassColor: Colors.transparent,
+                          ),
+                          child: LiquidGlass(
+                            shape: LiquidRoundedRectangle(borderRadius: 20),
+                            child: Container(
+                              width: 300,
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextField(
+                                    controller: nameController,
+                                    style: TextStyle(color: AppColors.text),
+                                    decoration: InputDecoration(
+                                      labelText: "Nama",
+                                      labelStyle: TextStyle(
+                                        color: AppColors.text,
+                                      ),
+                                      enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: AppColors.text,
+                                        ),
+                                      ),
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 20),
+                                  TextField(
+                                    controller: roleController,
+                                    style: TextStyle(color: AppColors.text),
+                                    decoration: InputDecoration(
+                                      labelText: "Jabatan",
+                                      labelStyle: TextStyle(
+                                        color: AppColors.text,
+                                      ),
+                                      enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: AppColors.text,
+                                        ),
+                                      ),
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 36),
+                        LiquidGlassLayer(
+                          settings: LiquidGlassSettings(
+                            thickness: 54,
+                            blur: 28,
+                            glassColor: Colors.transparent,
+                          ),
+                          child: LiquidGlass(
+                            shape: LiquidRoundedRectangle(borderRadius: 50),
+                            child: ElevatedButton(
+                              onPressed: saveProfile,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 130,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                "Simpan",
+                                style: GoogleFonts.ruda(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: roleController,
-                    style: TextStyle(color: AppColors.text),
-                    decoration: InputDecoration(
-                      labelText: "Jabatan",
-                      labelStyle: TextStyle(color: AppColors.text),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.text),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.primary),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: saveProfile,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: EdgeInsets.symmetric(vertical: 14, horizontal: 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      "Simpan",
-                      style: GoogleFonts.ruda(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                ),
+              ],
             ),
     );
   }
