@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -19,6 +18,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String? lastKategori;
+  bool hasActiveAlert = false;
+
   final db = FirebaseDatabase.instanceFor(
     app: Firebase.app(),
     databaseURL:
@@ -101,8 +103,22 @@ class _HomeState extends State<Home> {
   void listenMonitoring() {
     listeners.add(
       db.child("monitoring/status/kategori").onValue.listen((event) {
-        final value = event.snapshot.value;
-        if (value != null) setState(() => kategori = value.toString());
+        final value = event.snapshot.value?.toString();
+        if (value == null) return;
+
+        setState(() => kategori = value);
+
+        // DETEKSI PERUBAHAN STATUS
+        if (value != lastKategori) {
+          lastKategori = value;
+
+          if (value == "siaga" || value == "bahaya") {
+            saveNotifToFirestore(value);
+            hasActiveAlert = true;
+          } else {
+            hasActiveAlert = false;
+          }
+        }
       }),
     );
 
@@ -137,6 +153,26 @@ class _HomeState extends State<Home> {
           setState(() => tinggiMaksKolam = (value as num).toDouble());
       }),
     );
+  }
+
+  Future<void> saveNotifToFirestore(String kategori) async {
+    String title;
+    String message;
+
+    if (kategori == "siaga") {
+      title = "Status SIAGA";
+      message = "Ketinggian air mendekati batas aman";
+    } else {
+      title = "Status BAHAYA";
+      message = "PERINGATAN! Air sungai berpotensi meluap";
+    }
+
+    await FirebaseFirestore.instance.collection("notif").add({
+      "level": kategori,
+      "title": title,
+      "message": message,
+      "time": FieldValue.serverTimestamp(),
+    });
   }
 
   // Warna kategori
@@ -223,34 +259,47 @@ class _HomeState extends State<Home> {
                     // Icon Notif
                     Align(
                       alignment: Alignment.topRight,
-                      child: LiquidGlassLayer(
-                        settings: LiquidGlassSettings(
-                          thickness: 64,
-                          blur: 54,
-                          glassColor: Colors.transparent,
-                        ),
-                        child: LiquidGlass(
-                          shape: LiquidOval(),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppColors.primaryOpacity,
-                                  AppColors.secondaryOpacity,
-                                ],
+                      child: GestureDetector(
+                        onTap: () async {
+                          await Navigator.pushNamed(context, '/notif');
+
+                          // Saat kembali dari halaman notif
+                          if (mounted) {
+                            setState(() {
+                              hasActiveAlert = false;
+                            });
+                          }
+                        },
+                        child: LiquidGlassLayer(
+                          settings: LiquidGlassSettings(
+                            thickness: 64,
+                            blur: 54,
+                            glassColor: Colors.transparent,
+                          ),
+                          child: LiquidGlass(
+                            shape: LiquidOval(),
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(50),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppColors.primaryOpacity,
+                                    AppColors.secondaryOpacity,
+                                  ],
+                                ),
                               ),
-                            ),
-                            child: Center(
-                              child: HugeIcon(
-                                icon: HugeIcons.strokeRoundedNotification01,
-                                color: AppColors.textOpacity,
-                                size: 20,
-                                strokeWidth: 1.5,
+                              child: Center(
+                                child: Icon(
+                                  hasActiveAlert
+                                      ? Icons.notification_add_outlined
+                                      : Icons.notifications_outlined,
+                                  color: AppColors.textOpacity,
+                                  size: 20,
+                                ),
                               ),
                             ),
                           ),
