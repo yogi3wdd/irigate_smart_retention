@@ -65,15 +65,18 @@ class _StatistikState extends State<Statistik> {
 
       mapData.forEach((key, value) {
         if (value is Map) {
-          final timeMs =
-              int.tryParse(value["unixtimeStamp"]?.toString() ?? "0") ?? 0;
           final height =
               double.tryParse(value["height"]?.toString() ?? "0") ?? 0;
 
-          allData.add({
-            "height": height,
-            "time": DateTime.fromMillisecondsSinceEpoch(timeMs),
-          });
+          final timeMs =
+              int.tryParse(value["unixtimeStamp"]?.toString() ?? "0") ?? 0;
+
+          if (timeMs > 0) {
+            allData.add({
+              "height": height,
+              "time": DateTime.fromMillisecondsSinceEpoch(timeMs),
+            });
+          }
         }
       });
 
