@@ -85,35 +85,21 @@ class _StatistikState extends State<Statistik> {
       // Urutkan berdasarkan waktu
       allData.sort((a, b) => a["time"].compareTo(b["time"]));
 
-      DateTime now = DateTime.now();
-      DateTime limit = now.subtract(const Duration(hours: 7));
-
-      // Filter hanya 7 jam terakhir
-      List<Map<String, dynamic>> filtered = allData
-          .where((d) => d["time"].isAfter(limit))
-          .toList();
-
-      if (filtered.isEmpty) return;
-
-      // Group per jam (ambil 1 data terakhir per jam)
-      Map<String, Map<String, dynamic>> perJam = {};
-      for (var d in filtered) {
-        final t = d["time"];
-        String key = "${t.year}-${t.month}-${t.day}-${t.hour}";
-        perJam[key] = d;
-      }
-
-      List<Map<String, dynamic>> finalData = perJam.values.toList()
-        ..sort((a, b) => a["time"].compareTo(b["time"]));
+      // Ambil 7 data terakhir
+      List<Map<String, dynamic>> lastData = allData.length > 7
+          ? allData.sublist(allData.length - 7)
+          : allData;
 
       List<FlSpot> spots = [];
       List<String> labels = [];
 
-      for (int i = 0; i < finalData.length; i++) {
-        spots.add(FlSpot(i.toDouble(), finalData[i]["height"]));
+      for (int i = 0; i < lastData.length; i++) {
+        spots.add(FlSpot(i.toDouble(), lastData[i]["height"]));
 
-        final time = finalData[i]["time"];
-        labels.add("${time.hour.toString().padLeft(2, '0')}:00");
+        final time = lastData[i]["time"];
+        labels.add(
+          "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}",
+        );
       }
 
       setter(spots, labels);
