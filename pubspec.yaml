@@ -16,6 +16,7 @@ dependencies:
   fl_chart: ^1.1.1
   flutter:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4
   geocoding: ^4.0.0
   geolocator: ^14.0.2
   google_fonts: ^6.3.3
@@ -29,3 +30,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
