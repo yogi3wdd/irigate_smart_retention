@@ -8,7 +8,6 @@ Aplikasi dibangun dengan Flutter dan menggunakan **Liquid Glass UI Effect** untu
 Aplikasi mendukung platform:
 
 - **Android**
-- **iOS**
 
 File instalasi aplikasi tersedia pada halaman **Release** repository ini.
 
@@ -33,9 +32,6 @@ File instalasi aplikasi tersedia pada halaman **Release** repository ini.
 
 - **🎨 Liquid Glass UI Effect**  
   Antarmuka menggunakan efek Liquid Glass yang memberikan visual lembut, modern, dan interaktif.
-
-- **📱 Cross-Platform Support**  
-  Aplikasi dapat berjalan pada Android dan iOS.
 
 ---
 
