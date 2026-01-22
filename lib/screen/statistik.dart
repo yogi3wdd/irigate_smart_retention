@@ -54,10 +54,7 @@ class _StatistikState extends State<Statistik> {
           if (timeMs > 0) {
             parsed.add({
               "height": height,
-              "time": DateTime.fromMillisecondsSinceEpoch(
-                timeMs,
-                isUtc: true,
-              ).add(const Duration(hours: 7)),
+              "time": DateTime.fromMillisecondsSinceEpoch(timeMs, isUtc: false),
             });
           }
         }
