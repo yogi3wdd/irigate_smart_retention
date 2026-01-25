@@ -583,7 +583,7 @@ class _HomeState extends State<Home> {
                       ),
                       WidgetSpan(child: SizedBox(width: 6)),
                       TextSpan(
-                        text: "meter",
+                        text: "cm",
                         style: GoogleFonts.ruda(
                           fontSize: 14,
                           color: AppColors.text,
